@@ -1,0 +1,14 @@
+.ipynb_checkpoints
+__pycache__
+.DS_Store
+.*.swp
+*.egg-info/
+dist/
+build/
+.idea/*
+!.idea/dictionaries
+html/
+labml
+labml_helpers
+data
+logs
