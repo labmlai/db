@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from labml_db import Model, Key, Index, FileDbDriver, JsonSerializer, YamlSerializer, FileIndexDbDriver
 
@@ -16,10 +16,11 @@ class Project(Model['Project']):
 class User(Model['User']):
     name: str
     projects: List[Key[Project]]
+    occupation: Optional[str]
 
     @classmethod
     def defaults(cls):
-        return dict(name='', projects=[])
+        return dict(projects=[])
 
 
 class UsernameIndex(Index['User']):
@@ -41,6 +42,7 @@ def test():
     user = User(name='Varuna')
     user.name = 'Varuna'
     user.projects.append(proj.key)
+    user.occupation = 'test'
     user2 = User(name='X')
     print(user.projects, user2.projects)
     user.save()
@@ -61,8 +63,7 @@ def test_index():
     if user_key:
         user_key.delete()
 
-    user = User()
-    user.name = 'Varuna'
+    user = User(name='V')
     user.save()
     UsernameIndex.set(user.name, user.key)
 

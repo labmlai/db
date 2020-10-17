@@ -2,7 +2,7 @@ import copy
 import json
 import warnings
 from pathlib import Path
-from typing import Generic, TypeVar, List, Dict, Union, Type, Set, Optional
+from typing import Generic, TypeVar, List, Dict, Union, Type, Set, Optional, _GenericAlias
 
 Primitive = Union[Dict[str, 'Primitive'], List['Primitive'], int, str, float, bool, None]
 ModelDict = Dict[str, Primitive]
@@ -168,16 +168,35 @@ class ModelSpec:
             if 'defaults' in c.__dict__:
                 self._defaults.append(c)
 
-    def defaults(self) -> Dict[str, Primitive]:
+        self.required = set()
+        self.nones = set()
+        self.check_defaults()
+
+    def check_defaults(self):
         defaults = {}
         for d in self._defaults:
             defaults.update(d.defaults())
 
-        for k in self.annotations:
+        for k, v in self.annotations.items():
             if k[0] == '_':
                 continue
             if k not in defaults:
-                raise ValueError(f'Missing default {self.model_cls.__name__}:{k}')
+                # check for optional
+                if isinstance(v, _GenericAlias):
+                    if v._name is None and type(None) in v.__args__:
+                        defaults[k] = None
+                        self.nones.add(k)
+            if k not in defaults:
+                self.required.add(k)
+
+        for k in defaults:
+            if k not in self.annotations:
+                raise ValueError(f'Unknown default {self.model_cls.__name__}:{k} = {defaults[k]}')
+
+    def defaults(self) -> Dict[str, Primitive]:
+        defaults = {k: None for k in self.nones}
+        for d in self._defaults:
+            defaults.update(d.defaults())
 
         return defaults
 
@@ -200,6 +219,10 @@ class Model(Generic[_KT]):
         self._key = key
         self._values = {}
         self._defaults = model_cls.defaults()
+
+        for k in model_cls.required:
+            if k not in kwargs:
+                raise ValueError(f'Missing required value {self.__class__.__name__}:{k}')
 
         for k, v in kwargs.items():
             setattr(self, k, v)
@@ -267,13 +290,16 @@ class Model(Generic[_KT]):
         db_driver.delete(key)
 
     def to_dict(self) -> ModelDict:
-        return self._values
+        values = {}
+        for k, v in self._values.items():
+            if k not in self._defaults or self._defaults[k] != v:
+                values[k] = v
+        return values
 
     @classmethod
     def from_dict(cls, key: str, data: ModelDict) -> _KT:
         model_name = key.split(':')[0]
-        model = Model.__models[model_name].model_cls(key)
-        model.update(data)
+        model = Model.__models[model_name].model_cls(key, **data)
         return model
 
     def save(self):
