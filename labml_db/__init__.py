@@ -23,8 +23,8 @@ class Serializer:
 
 
 class DbDriver:
-    def __init__(self, serializer: Serializer, model_name: str):
-        self.model_name = model_name
+    def __init__(self, serializer: Serializer, model_cls: Type['Model']):
+        self.model_name = model_cls.__name__
         self._serializer = serializer
 
     def load_dict(self, key: str):
@@ -60,8 +60,8 @@ class YamlSerializer(Serializer):
 
 
 class FileDbDriver(DbDriver):
-    def __init__(self, serializer: Serializer, name: str, db_path: Path):
-        super().__init__(serializer, name)
+    def __init__(self, serializer: Serializer, model_cls: Type['Model'], db_path: Path):
+        super().__init__(serializer, model_cls)
         self._db_path = db_path
         if not db_path.exists():
             db_path.mkdir(parents=True)
@@ -247,8 +247,8 @@ class Model(Generic[_KT]):
 
 
 class IndexDbDriver:
-    def __init__(self, index_name: str):
-        self.index_name = index_name
+    def __init__(self, index_cls: Type['Index']):
+        self.index_name = index_cls.__name__
 
     def delete(self, index_key: str):
         raise NotImplementedError
@@ -263,8 +263,8 @@ class IndexDbDriver:
 class FileIndexDbDriver(IndexDbDriver):
     _cache: Optional[Dict[str, str]]
 
-    def __init__(self, serializer: Serializer, name: str, index_path: Path):
-        super().__init__(name)
+    def __init__(self, serializer: Serializer, index_cls: Type['Index'], index_path: Path):
+        super().__init__(index_cls)
         self._serializer = serializer
         self._index_path = index_path
         self._cache = None

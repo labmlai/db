@@ -28,11 +28,11 @@ class UsernameIndex(Index['User']):
 
 def test_setup():
     Model.set_db_drivers([
-        FileDbDriver(JsonSerializer(), 'User', Path('./data/user')),
-        FileDbDriver(YamlSerializer(), 'Project', Path('./data/project'))
+        FileDbDriver(JsonSerializer(), User, Path('./data/user')),
+        FileDbDriver(YamlSerializer(), Project, Path('./data/project'))
     ])
     Index.set_db_drivers([
-        FileIndexDbDriver(YamlSerializer(), 'UsernameIndex', Path('./data/UserNameIndex.yaml'))
+        FileIndexDbDriver(YamlSerializer(), UsernameIndex, Path('./data/UserNameIndex.yaml'))
     ])
 
 
