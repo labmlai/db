@@ -34,14 +34,13 @@ def test_setup():
         FileDbDriver(YamlSerializer(), Project, Path('./data/project'))
     ])
     Index.set_db_drivers([
-        FileIndexDbDriver(YamlSerializer(), UsernameIndex, Path('./data/UserNameIndex.yaml'))
+        FileIndexDbDriver(JsonSerializer(), UsernameIndex, Path('./data/UserNameIndex.yaml'))
     ])
 
 
 def test():
     proj = Project(name='nlp')
-    user = User(name='Varuna')
-    user.name = 'Varuna'
+    user = User(name='John')
     user.projects.append(proj.key)
     user.occupation = 'test'
     user2 = User(name='X')
@@ -60,7 +59,7 @@ def test_load():
 
 
 def test_index():
-    user_key = UsernameIndex.get('Varuna')
+    user_key = UsernameIndex.get('John')
     if user_key:
         user_key.delete()
 

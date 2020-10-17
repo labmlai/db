@@ -5,10 +5,10 @@ with open("readme.rst", "r") as f:
 
 setuptools.setup(
     name='labml_db',
-    version='0.0.2',
+    version='0.0.3',
     author="Varuna Jayasiri, Nipun Wijerathne",
     author_email="vpjayasiri@gmail.com, hnipun@gmail.com",
-    description="ORM for JSON/YAML file based DB",
+    description="Minimalistic ORM for JSON/YAML/Pickle file based DB",
     long_description=long_description,
     long_description_content_type="text/x-rst",
     url="https://github.com/lab-ml/db",
