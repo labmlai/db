@@ -31,6 +31,9 @@ class DbDriver:
     def load_dict(self, key: str):
         raise NotImplementedError
 
+    def delete(self, key: str):
+        raise NotImplementedError
+
     def save_dict(self, key: str, data: ModelDict):
         raise NotImplementedError
 
@@ -98,6 +101,10 @@ class FileDbDriver(DbDriver):
         path = self._db_path / f'{key}.{self._serializer.file_extension}'
         with open(str(path), 'w') as f:
             return f.write(self._serializer.to_string(data))
+
+    def delete(self, key: str):
+        path = self._db_path / f'{key}.{self._serializer.file_extension}'
+        path.unlink()
 
     def get_all(self) -> List[str]:
         keys = []
@@ -253,6 +260,12 @@ class Model(Generic[_KT]):
         data = db_driver.load_dict(key)
         return Model.from_dict(key, data)
 
+    @staticmethod
+    def delete_by_key(key: str):
+        model_name = key.split(':')[0]
+        db_driver = Model.__db_drivers[model_name]
+        db_driver.delete(key)
+
     def to_dict(self) -> ModelDict:
         return self._values
 
@@ -267,10 +280,15 @@ class Model(Generic[_KT]):
         db_driver = Model.__db_drivers[self.__class__.__name__]
         db_driver.save_dict(self._key, self.to_dict())
 
+    def delete(self):
+        db_driver = Model.__db_drivers[self.__class__.__name__]
+        db_driver.delete(self._key)
+
     def __repr__(self):
         kv = [f'{k}={repr(v)}' for k, v in self._values.items()]
         kv = ', '.join(kv)
         return f'{self.__class__.__name__}({kv})'
+
 
 class IndexDbDriver:
     def __init__(self, index_cls: Type['Index']):
@@ -365,6 +383,9 @@ class Key(Generic[_KT]):
 
     def load(self) -> _KT:
         return Model.load(self._key)
+
+    def delete(self):
+        return Model.delete_by_key(self._key)
 
     def __repr__(self):
         return f'Key({self._key})'

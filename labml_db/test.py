@@ -59,12 +59,12 @@ def test_load():
 def test_index():
     user_key = UsernameIndex.get('Varuna')
     if user_key:
-        user = user_key.load()
-    else:
-        user = User()
-        user.name = 'Varuna'
-        user.save()
-        UsernameIndex.set(user.name, user.key)
+        user_key.delete()
+
+    user = User()
+    user.name = 'Varuna'
+    user.save()
+    UsernameIndex.set(user.name, user.key)
 
     print(user.key, user.name, user.projects)
 
