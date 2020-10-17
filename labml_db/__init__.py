@@ -1,3 +1,4 @@
+import copy
 import json
 import warnings
 from pathlib import Path
@@ -37,14 +38,36 @@ class DbDriver:
         raise NotImplementedError
 
 
+def _encode_keys(data: Primitive):
+    if isinstance(data, Key):
+        return {'__key__': str(data)}
+    elif isinstance(data, list):
+        return [_encode_keys(d) for d in data]
+    elif isinstance(data, dict):
+        return {k: _encode_keys(v) for k, v in data.items()}
+    else:
+        return data
+
+
+def _decode_keys(data: Primitive):
+    if isinstance(data, dict) and '__key__' in data:
+        return Key(data['__key__'])
+    elif isinstance(data, list):
+        return [_decode_keys(d) for d in data]
+    elif isinstance(data, dict):
+        return {k: _decode_keys(v) for k, v in data.items()}
+    else:
+        return data
+
+
 class JsonSerializer(Serializer):
     file_extension = 'json'
 
     def to_string(self, data: ModelDict) -> str:
-        return json.dumps(data)
+        return json.dumps(_encode_keys(data))
 
     def from_string(self, data: str) -> ModelDict:
-        return json.loads(data)
+        return _decode_keys(json.loads(data))
 
 
 class YamlSerializer(Serializer):
@@ -52,11 +75,11 @@ class YamlSerializer(Serializer):
 
     def to_string(self, data: ModelDict) -> str:
         import yaml
-        return yaml.dump(data, default_flow_style=False)
+        return yaml.dump(_encode_keys(data), default_flow_style=False)
 
     def from_string(self, data: str) -> ModelDict:
         import yaml
-        return yaml.load(data, Loader=yaml.FullLoader)
+        return _decode_keys(yaml.load(data, Loader=yaml.FullLoader))
 
 
 class FileDbDriver(DbDriver):
@@ -158,7 +181,7 @@ class Model(Generic[_KT]):
     _defaults = Dict[str, Primitive]
     _values = Dict[str, Primitive]
 
-    def __init__(self, key: Optional[str] = None):
+    def __init__(self, key: Optional[str] = None, **kwargs):
         model_cls: ModelSpec = Model.__models[self.__class__.__name__]
 
         if key is None:
@@ -170,6 +193,9 @@ class Model(Generic[_KT]):
         self._key = key
         self._values = {}
         self._defaults = model_cls.defaults()
+
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
     def __init_subclass__(cls, **kwargs):
         if cls.__name__ in Model.__models:
@@ -192,11 +218,7 @@ class Model(Generic[_KT]):
         if key not in model_cls.annotations:
             raise ValueError(f'Unknown property {key}')
 
-        if value == self._defaults[key]:
-            if key in self._values:
-                del self._values[key]
-        else:
-            self._values[key] = value
+        self._values[key] = value
 
     def update(self, data: ModelDict):
         for k, v in data.items():
@@ -207,10 +229,10 @@ class Model(Generic[_KT]):
         if key not in model_cls.annotations:
             raise ValueError(f'Unknown property {key}')
 
-        if key in self._values:
-            return self._values[key]
-        else:
-            return self._defaults[key]
+        if key not in self._values:
+            self._values[key] = copy.deepcopy(self._defaults[key])
+
+        return self._values[key]
 
     @classmethod
     def defaults(cls):
@@ -232,7 +254,7 @@ class Model(Generic[_KT]):
         return Model.from_dict(key, data)
 
     def to_dict(self) -> ModelDict:
-        return self._values.copy()
+        return self._values
 
     @classmethod
     def from_dict(cls, key: str, data: ModelDict) -> _KT:
@@ -245,6 +267,10 @@ class Model(Generic[_KT]):
         db_driver = Model.__db_drivers[self.__class__.__name__]
         db_driver.save_dict(self._key, self.to_dict())
 
+    def __repr__(self):
+        kv = [f'{k}={repr(v)}' for k, v in self._values.items()]
+        kv = ', '.join(kv)
+        return f'{self.__class__.__name__}({kv})'
 
 class IndexDbDriver:
     def __init__(self, index_cls: Type['Index']):
@@ -325,7 +351,7 @@ class Index(Generic[_KT]):
     @classmethod
     def set(cls, index_key: str, model_key: 'Key[_KT]'):
         db_driver = Index.__db_drivers[cls.__name__]
-        db_driver.set(index_key, model_key.to_string())
+        db_driver.set(index_key, str(model_key))
 
 
 class Key(Generic[_KT]):
@@ -334,7 +360,7 @@ class Key(Generic[_KT]):
     def __init__(self, key: str):
         self._key = key
 
-    def to_string(self):
+    def __str__(self):
         return self._key
 
     def load(self) -> _KT:
@@ -342,4 +368,3 @@ class Key(Generic[_KT]):
 
     def __repr__(self):
         return f'Key({self._key})'
-

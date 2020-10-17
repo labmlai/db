@@ -37,11 +37,12 @@ def test_setup():
 
 
 def test():
-    proj = Project()
-    proj.name = 'nlp'
-    user = User()
+    proj = Project(name='nlp')
+    user = User(name='Varuna')
     user.name = 'Varuna'
     user.projects.append(proj.key)
+    user2 = User(name='X')
+    print(user.projects, user2.projects)
     user.save()
     proj.save()
 
@@ -50,7 +51,7 @@ def test():
 
 def test_load():
     keys = User.get_all()
-    print([k.load().name for k in keys])
+    print([k.load() for k in keys])
     keys = Project.get_all()
     print([k.load().name for k in keys])
 
