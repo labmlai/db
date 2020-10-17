@@ -1,5 +1,6 @@
 import copy
 import json
+import pickle
 import warnings
 from pathlib import Path
 from typing import Generic, TypeVar, List, Dict, Union, Type, Set, Optional, _GenericAlias
@@ -15,11 +16,12 @@ def generate_uuid() -> str:
 
 class Serializer:
     file_extension = 'data'
+    is_bytes = False
 
-    def to_string(self, data: ModelDict) -> str:
+    def to_string(self, data: ModelDict) -> Union[str, bytes]:
         raise NotImplementedError
 
-    def from_string(self, data: str) -> ModelDict:
+    def from_string(self, data:  Union[str, bytes]) -> ModelDict:
         raise NotImplementedError
 
 
@@ -73,6 +75,17 @@ class JsonSerializer(Serializer):
         return _decode_keys(json.loads(data))
 
 
+class PickleSerializer(Serializer):
+    file_extension = 'pkl'
+    is_bytes = True
+
+    def to_string(self, data: ModelDict) -> bytes:
+        return pickle.dumps(data)
+
+    def from_string(self, data: bytes) -> ModelDict:
+        return pickle.loads(data)
+
+
 class YamlSerializer(Serializer):
     file_extension = 'yaml'
 
@@ -94,13 +107,21 @@ class FileDbDriver(DbDriver):
 
     def load_dict(self, key: str) -> ModelDict:
         path = self._db_path / f'{key}.{self._serializer.file_extension}'
-        with open(str(path), 'r') as f:
-            return self._serializer.from_string(f.read())
+        if self._serializer.is_bytes:
+            with open(str(path), 'rb') as f:
+                return self._serializer.from_string(f.read())
+        else:
+            with open(str(path), 'r') as f:
+                return self._serializer.from_string(f.read())
 
     def save_dict(self, key: str, data: ModelDict):
         path = self._db_path / f'{key}.{self._serializer.file_extension}'
-        with open(str(path), 'w') as f:
-            return f.write(self._serializer.to_string(data))
+        if self._serializer.is_bytes:
+            with open(str(path), 'wb') as f:
+                return f.write(self._serializer.to_string(data))
+        else:
+            with open(str(path), 'w') as f:
+                return f.write(self._serializer.to_string(data))
 
     def delete(self, key: str):
         path = self._db_path / f'{key}.{self._serializer.file_extension}'

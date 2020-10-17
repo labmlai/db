@@ -1,7 +1,8 @@
 from pathlib import Path
 from typing import List, Optional
 
-from labml_db import Model, Key, Index, FileDbDriver, JsonSerializer, YamlSerializer, FileIndexDbDriver
+from labml_db import Model, Key, Index, FileDbDriver, JsonSerializer, YamlSerializer, FileIndexDbDriver, \
+    PickleSerializer
 
 
 class Project(Model['Project']):
@@ -29,7 +30,7 @@ class UsernameIndex(Index['User']):
 
 def test_setup():
     Model.set_db_drivers([
-        FileDbDriver(JsonSerializer(), User, Path('./data/user')),
+        FileDbDriver(PickleSerializer(), User, Path('./data/user')),
         FileDbDriver(YamlSerializer(), Project, Path('./data/project'))
     ])
     Index.set_db_drivers([
