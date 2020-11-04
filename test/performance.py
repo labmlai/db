@@ -50,21 +50,21 @@ def test_setup():
     ])
 
 
-def test(is_yaml, is_json, is_pickle, n):
-    data = [i * 0.5 - 1e-7 for i in range(n)]
+def test(is_yaml, is_json, is_pickle, length, n):
+    data = [i * 0.5 - 1e-7 for i in range(length)]
     if is_yaml:
         with monit.section('YAML save'):
-            for i in range(100):
+            for i in range(n):
                 m = YamlModel(data=data)
                 m.save()
     if is_pickle:
         with monit.section('Pickle save'):
-            for i in range(100):
+            for i in range(n):
                 m = PickleModel(data=data)
                 m.save()
     if is_json:
         with monit.section('JSON save'):
-            for i in range(100):
+            for i in range(n):
                 m = JsonModel(data=data)
                 m.save()
 
@@ -87,5 +87,7 @@ def test(is_yaml, is_json, is_pickle, n):
 
 if __name__ == '__main__':
     test_setup()
-    # test(True, True, True, 1000)
-    test(False, True, True, 100_000)
+    # test(True, True, True, 1000, 100)
+    test(False, True, True, 1000_000, 10)
+    # test(False, True, True, 100_000, 100)
+    # test(False, True, True, 10_000, 1000)
