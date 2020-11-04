@@ -2,8 +2,7 @@ from typing import Generic, List, Dict, Optional, TypeVar, TYPE_CHECKING
 
 from .index_driver import IndexDbDriver
 
-if TYPE_CHECKING:
-    from .model import Key
+from .model import Key
 
 _KT = TypeVar('_KT')
 
@@ -21,7 +20,7 @@ class Index(Generic[_KT]):
         db_driver.delete(index_key)
 
     @classmethod
-    def get(cls, index_key: str) -> Optional['Key[_KT]']:
+    def get(cls, index_key: str) -> Optional[Key[_KT]]:
         db_driver = Index.__db_drivers[cls.__name__]
         key = db_driver.get(index_key)
         if key is None:
@@ -30,6 +29,6 @@ class Index(Generic[_KT]):
             return Key(key)
 
     @classmethod
-    def set(cls, index_key: str, model_key: 'Key[_KT]'):
+    def set(cls, index_key: str, model_key: Key[_KT]):
         db_driver = Index.__db_drivers[cls.__name__]
         db_driver.set(index_key, str(model_key))
