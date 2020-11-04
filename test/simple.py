@@ -1,8 +1,12 @@
 from pathlib import Path
 from typing import List, Optional
 
-from labml_db import Model, Key, Index, FileDbDriver, JsonSerializer, YamlSerializer, FileIndexDbDriver, \
-    PickleSerializer
+from labml_db import Model, Key, Index
+from labml_db.driver.file import FileDbDriver
+from labml_db.index_driver.file import FileIndexDbDriver
+from labml_db.serializer.json import JsonSerializer
+from labml_db.serializer.pickle import PickleSerializer
+from labml_db.serializer.yaml import YamlSerializer
 
 
 class Project(Model['Project']):
