@@ -50,35 +50,42 @@ def test_setup():
     ])
 
 
-def test():
-    data = [i * 0.5 for i in range(1000)]
-    with monit.section('YAML save'):
-        for i in range(100):
-            m = YamlModel(data=data)
-            m.save()
-    with monit.section('JSON save'):
-        for i in range(100):
-            m = JsonModel(data=data)
-            m.save()
-    with monit.section('Pickle save'):
-        for i in range(100):
-            m = PickleModel(data=data)
-            m.save()
+def test(is_yaml, is_json, is_pickle, n):
+    data = [i * 0.5 - 1e-7 for i in range(n)]
+    if is_yaml:
+        with monit.section('YAML save'):
+            for i in range(100):
+                m = YamlModel(data=data)
+                m.save()
+    if is_pickle:
+        with monit.section('Pickle save'):
+            for i in range(100):
+                m = PickleModel(data=data)
+                m.save()
+    if is_json:
+        with monit.section('JSON save'):
+            for i in range(100):
+                m = JsonModel(data=data)
+                m.save()
 
-    with monit.section('YAML Load'):
-        keys = YamlModel.get_all()
-        m = [k.load() for k in keys]
-        logger.log(f'{len(m)}')
-    with monit.section('JSON Load'):
-        keys = JsonModel.get_all()
-        m = [k.load() for k in keys]
-        logger.log(f'{len(m)}')
-    with monit.section('Pickle Load'):
-        keys = PickleModel.get_all()
-        m = [k.load() for k in keys]
-        logger.log(f'{len(m)}')
+    if is_yaml:
+        with monit.section('YAML Load'):
+            keys = YamlModel.get_all()
+            m = [k.load() for k in keys]
+            logger.log(f'{len(m)}')
+    if is_json:
+        with monit.section('JSON Load'):
+            keys = JsonModel.get_all()
+            m = [k.load() for k in keys]
+            logger.log(f'{len(m)}')
+    if is_pickle:
+        with monit.section('Pickle Load'):
+            keys = PickleModel.get_all()
+            m = [k.load() for k in keys]
+            logger.log(f'{len(m)}')
 
 
 if __name__ == '__main__':
     test_setup()
-    test()
+    # test(True, True, True, 1000)
+    test(False, True, True, 100_000)
