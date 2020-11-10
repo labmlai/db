@@ -1,11 +1,12 @@
 from pathlib import Path
-from typing import List, Type, TYPE_CHECKING
+from typing import List, Type, TYPE_CHECKING, Optional
 
 from . import DbDriver
 from ..types import ModelDict
 
 if TYPE_CHECKING:
     from .. import Serializer
+    from ..model import Model
 
 
 class FileDbDriver(DbDriver):
@@ -15,8 +16,11 @@ class FileDbDriver(DbDriver):
         if not db_path.exists():
             db_path.mkdir(parents=True)
 
-    def load_dict(self, key: str) -> ModelDict:
+    def load_dict(self, key: str) -> Optional[ModelDict]:
         path = self._db_path / f'{key}.{self._serializer.file_extension}'
+        if not path.exists():
+            return None
+
         if self._serializer.is_bytes:
             with open(str(path), 'rb') as f:
                 return self._serializer.from_string(f.read())

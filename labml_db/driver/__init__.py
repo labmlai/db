@@ -1,4 +1,4 @@
-from typing import List, Type, TYPE_CHECKING
+from typing import List, Type, TYPE_CHECKING, Optional
 
 from ..types import ModelDict
 
@@ -11,7 +11,7 @@ class DbDriver:
         self.model_name = model_cls.__name__
         self._serializer = serializer
 
-    def load_dict(self, key: str):
+    def load_dict(self, key: str) -> Optional[ModelDict]:
         raise NotImplementedError
 
     def delete(self, key: str):
