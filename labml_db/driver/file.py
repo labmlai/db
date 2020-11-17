@@ -1,3 +1,4 @@
+import fcntl
 from pathlib import Path
 from typing import List, Type, TYPE_CHECKING, Optional
 
@@ -23,18 +24,22 @@ class FileDbDriver(DbDriver):
 
         if self._serializer.is_bytes:
             with open(str(path), 'rb') as f:
+                fcntl.lockf(f, fcntl.LOCK_SH)
                 return self._serializer.from_string(f.read())
         else:
             with open(str(path), 'r') as f:
+                fcntl.lockf(f, fcntl.LOCK_SH)
                 return self._serializer.from_string(f.read())
 
     def save_dict(self, key: str, data: ModelDict):
         path = self._db_path / f'{key}.{self._serializer.file_extension}'
         if self._serializer.is_bytes:
             with open(str(path), 'wb') as f:
+                fcntl.lockf(f, fcntl.LOCK_EX)
                 return f.write(self._serializer.to_string(data))
         else:
             with open(str(path), 'w') as f:
+                fcntl.lockf(f, fcntl.LOCK_EX)
                 return f.write(self._serializer.to_string(data))
 
     def delete(self, key: str):
