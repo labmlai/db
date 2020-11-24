@@ -17,7 +17,8 @@ setuptools.setup(
     },
     packages=setuptools.find_packages(exclude=('test',
                                                'test.*')),
-    install_requires=['pyyaml>=5.3.1'],
+    install_requires=['pyyaml>=5.3.1',
+                      'redis'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
