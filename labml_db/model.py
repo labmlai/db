@@ -51,6 +51,8 @@ class Key(Generic[_KT]):
     _key: str
 
     def __init__(self, key: str):
+        if type(key) == bytes:
+            key = key.decode('utf-8')
         self._key = key
 
     def __str__(self):

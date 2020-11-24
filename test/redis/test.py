@@ -4,10 +4,8 @@ from typing import List, Optional
 import redis
 
 from labml_db import Model, Key, Index
-from labml_db.driver.file import FileDbDriver
 from labml_db.driver.redis import RedisDbDriver
-from labml_db.index_driver.file import FileIndexDbDriver
-from labml_db.serializer.json import JsonSerializer
+from labml_db.index_driver.redis import RedisIndexDbDriver
 from labml_db.serializer.pickle import PickleSerializer
 from labml_db.serializer.yaml import YamlSerializer
 
@@ -42,7 +40,7 @@ def test_setup():
         RedisDbDriver(YamlSerializer(), Project, db)
     ])
     Index.set_db_drivers([
-        FileIndexDbDriver(JsonSerializer(), UsernameIndex, Path('./data/UserNameIndex.yaml'))
+        RedisIndexDbDriver(UsernameIndex, db)
     ])
 
 
@@ -69,9 +67,10 @@ def test_load():
 def test_index():
     user_key = UsernameIndex.get('John')
     if user_key:
+        print('index', user_key.load())
         user_key.delete()
 
-    user = User(name='V')
+    user = User(name='John')
     user.save()
     UsernameIndex.set(user.name, user.key)
 
@@ -82,4 +81,4 @@ if __name__ == '__main__':
     test_setup()
     test()
     test_load()
-    # test_index()
+    test_index()
