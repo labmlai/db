@@ -64,6 +64,12 @@ class Key(Generic[_KT]):
     def delete(self):
         return Model.delete_by_key(self._key)
 
+    def save(self, data: ModelDict):
+        return Model.save_by_key(self._key, data)
+
+    def read(self):
+        return Model.read_dict(self._key)
+
     def __repr__(self):
         return f'Key({self._key})'
 
@@ -191,10 +197,16 @@ class Model(Generic[_KT]):
         Model.__db_drivers = {d.model_name: d for d in db_drivers}
 
     @classmethod
-    def load(cls, key: str) -> Optional[_KT]:
+    def read_dict(cls, key: str) -> ModelDict:
         model_name = key.split(':')[0]
         db_driver = Model.__db_drivers[model_name]
         data = db_driver.load_dict(key)
+
+        return data
+
+    @classmethod
+    def load(cls, key: str) -> Optional[_KT]:
+        data = cls.read_dict(key)
         if data is None:
             return None
         return Model.from_dict(key, data)
@@ -204,6 +216,12 @@ class Model(Generic[_KT]):
         model_name = key.split(':')[0]
         db_driver = Model.__db_drivers[model_name]
         db_driver.delete(key)
+
+    @staticmethod
+    def save_by_key(key: str, data: ModelDict):
+        model_name = key.split(':')[0]
+        db_driver = Model.__db_drivers[model_name]
+        db_driver.save_dict(key, data)
 
     def to_dict(self) -> ModelDict:
         values = {}
