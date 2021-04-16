@@ -206,9 +206,7 @@ class Model(Generic[_KT]):
 
     @classmethod
     def load(cls, key: str) -> Optional[_KT]:
-        model_name = key.split(':')[0]
-        db_driver = Model.__db_drivers[model_name]
-        data = db_driver.load_dict(key)
+        data = cls.read_dict(key)
         if data is None:
             return None
         return Model.from_dict(key, data)
