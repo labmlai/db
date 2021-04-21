@@ -174,6 +174,8 @@ class Model(Generic[_KT]):
         for k, v in data.items():
             setattr(self, k, v)
 
+        self.save()
+
     def __getattr__(self, key: str):
         model_cls: ModelSpec = Model.__models[self.__class__.__name__]
         if key not in model_cls.annotations:
