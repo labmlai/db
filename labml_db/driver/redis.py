@@ -24,6 +24,9 @@ class RedisDbDriver(DbDriver):
     def load_dict(self, key: str) -> Optional[ModelDict]:
         return self._serializer.from_string(self._db.get(key))
 
+    def load_dict_from_serializer(self, key: str, serializer: 'Serializer') -> Optional[ModelDict]:
+        return serializer.from_string(self._db.get(key))
+
     def save_dict(self, key: str, data: ModelDict):
         self._db.sadd(self._keys_list_key, key)
         self._db.set(key, self._serializer.to_string(data))
