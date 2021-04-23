@@ -5,7 +5,7 @@ with open("readme.rst", "r") as f:
 
 setuptools.setup(
     name='labml_db',
-    version='0.0.9',
+    version='0.0.10',
     author="Varuna Jayasiri, Nipun Wijerathne",
     author_email="vpjayasiri@gmail.com, hnipun@gmail.com",
     description="Minimalistic ORM for JSON/YAML/Pickle file based DB",
