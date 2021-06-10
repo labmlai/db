@@ -59,7 +59,7 @@ class Key(Generic[_KT]):
         return self._key
 
     def load(self, db_driver: Optional['DbDriver'] = None) -> _KT:
-        return Model.load(self._key)
+        return Model.load(self._key, db_driver)
 
     def delete(self):
         return Model.delete_by_key(self._key)
