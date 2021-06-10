@@ -1,5 +1,6 @@
 import copy
 import warnings
+from typing import Generic, Union
 from typing import TypeVar, List, Dict, Type, Set, Optional, _GenericAlias, TYPE_CHECKING
 
 from .types import Primitive, ModelDict
@@ -44,7 +45,6 @@ def _get_base_classes(class_: Type['Model']) -> List[Type['Model']]:
     return unique_classes
 
 
-from typing import Generic
 
 
 class Key(Generic[_KT]):
@@ -72,6 +72,45 @@ class Key(Generic[_KT]):
 
     def __repr__(self):
         return f'Key({self._key})'
+
+class KeyList(Generic[_KT]):
+    _keys: List[str]
+
+    def __init__(self, key_list: Optional[List[Union[str, Key[_KT]]]] = None):
+        if key_list is None:
+            key_list = []
+        self._keys = []
+        for k in key_list:
+            self.append(k)
+
+    def append(self, key: Union[str, Key[_KT]]):
+        if type(key) == bytes:
+            self._keys.append(key.decode('utf-8'))
+        elif type(key) == str:
+            self._keys.append(key)
+        else:
+            self._keys.append(str(key))
+
+    def __str__(self):
+        return ', '.join(self._keys)
+
+    #TODO: Implement these for multiple gets/sets on driver
+    def load(self, db_driver: Optional['DbDriver'] = None) -> _KT:
+        return [Model.load(k, db_driver) for k in self._keys]
+
+    def delete(self):
+        return [Model.delete_by_key(k) for k in self._keys]
+
+    def save(self, data: List[ModelDict]):
+        assert len(data) == len(self._keys)
+        return [Model.save_by_key(k, d) for k, d in zip(self._keys, data)]
+
+    def read(self, db_driver: Optional['DbDriver'] = None):
+        return [Model.read_dict(k, db_driver) for k in self._keys]
+
+    def __repr__(self):
+        s = ', '.join(self._keys)
+        return f'KeyList({s})'
 
 
 class ModelSpec:
