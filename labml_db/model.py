@@ -6,7 +6,6 @@ from .types import Primitive, ModelDict
 
 if TYPE_CHECKING:
     from .driver import DbDriver
-    from .serializer import Serializer
 
 _KT = TypeVar('_KT')
 
@@ -59,7 +58,7 @@ class Key(Generic[_KT]):
     def __str__(self):
         return self._key
 
-    def load(self) -> _KT:
+    def load(self, db_driver: Optional['DbDriver'] = None) -> _KT:
         return Model.load(self._key)
 
     def delete(self):
@@ -68,11 +67,8 @@ class Key(Generic[_KT]):
     def save(self, data: ModelDict):
         return Model.save_by_key(self._key, data)
 
-    def read(self):
-        return Model.read_dict(self._key)
-
-    def read_from_serializer(self, serializer: 'Serializer'):
-        return Model.read_dict_from_serializer(self._key, serializer)
+    def read(self, db_driver: Optional['DbDriver'] = None):
+        return Model.read_dict(self._key, db_driver)
 
     def __repr__(self):
         return f'Key({self._key})'
@@ -201,24 +197,17 @@ class Model(Generic[_KT]):
         Model.__db_drivers = {d.model_name: d for d in db_drivers}
 
     @classmethod
-    def read_dict(cls, key: str) -> ModelDict:
+    def read_dict(cls, key: str, db_driver: Optional['DbDriver'] = None) -> ModelDict:
         model_name = key.split(':')[0]
-        db_driver = Model.__db_drivers[model_name]
+        if db_driver is None:
+            db_driver = Model.__db_drivers[model_name]
         data = db_driver.load_dict(key)
 
         return data
 
     @classmethod
-    def read_dict_from_serializer(cls, key, serializer: 'Serializer'):
-        model_name = key.split(':')[0]
-        db_driver = Model.__db_drivers[model_name]
-        data = db_driver.load_dict_from_serializer(key, serializer)
-
-        return data
-
-    @classmethod
-    def load(cls, key: str) -> Optional[_KT]:
-        data = cls.read_dict(key)
+    def load(cls, key: str, db_driver: Optional['DbDriver'] = None) -> Optional[_KT]:
+        data = cls.read_dict(key, db_driver)
         if data is None:
             return None
         return Model.from_dict(key, data)
