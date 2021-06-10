@@ -1,11 +1,10 @@
 from pathlib import Path
 from typing import Dict, Type, Optional, TYPE_CHECKING
 
-import redis
-
 from . import IndexDbDriver
 
 if TYPE_CHECKING:
+    import redis
     from .. import Index
     from .. import Serializer
 
@@ -13,7 +12,7 @@ if TYPE_CHECKING:
 class RedisIndexDbDriver(IndexDbDriver):
     _cache: Optional[Dict[str, str]]
 
-    def __init__(self, index_cls: Type['Index'], db: redis.Redis):
+    def __init__(self, index_cls: Type['Index'], db: 'redis.Redis'):
         super().__init__(index_cls)
         self._db = db
 

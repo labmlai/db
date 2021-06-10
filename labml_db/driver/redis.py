@@ -1,19 +1,16 @@
-import fcntl
-from pathlib import Path
 from typing import List, Type, TYPE_CHECKING, Optional
-
-import redis
 
 from . import DbDriver
 from ..types import ModelDict
 
 if TYPE_CHECKING:
+    import redis
     from .. import Serializer
     from ..model import Model
 
 
 class RedisDbDriver(DbDriver):
-    def __init__(self, serializer: 'Serializer', model_cls: Type['Model'], db: redis.Redis):
+    def __init__(self, serializer: 'Serializer', model_cls: Type['Model'], db: 'redis.Redis'):
         super().__init__(serializer, model_cls)
         self._db = db
 
