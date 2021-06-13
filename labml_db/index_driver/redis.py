@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Dict, Type, Optional, TYPE_CHECKING
 
 from . import IndexDbDriver
@@ -6,7 +5,6 @@ from . import IndexDbDriver
 if TYPE_CHECKING:
     import redis
     from .. import Index
-    from .. import Serializer
 
 
 class RedisIndexDbDriver(IndexDbDriver):

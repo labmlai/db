@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, Type, Optional, TYPE_CHECKING
+from typing import Dict, Type, Optional, TYPE_CHECKING, List
 
 from . import IndexDbDriver
 
@@ -42,6 +42,10 @@ class FileIndexDbDriver(IndexDbDriver):
     def get(self, index_key: str) -> str:
         self._load_cache()
         return self._cache.get(index_key, None)
+
+    def mget(self, index_key: List[str]) -> List[str]:
+        self._load_cache()
+        return [self._cache.get(idx, None) for idx in index_key]
 
     def set(self, index_key: str, model_key: str):
         self._load_cache()
