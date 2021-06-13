@@ -65,7 +65,7 @@ class Key(Generic[_KT]):
     def save(self, data: ModelDict):
         return Model.save_by_key(self._key, data)
 
-    def read(self, db_driver: Optional['DbDriver'] = None):
+    def read(self, db_driver: Optional['DbDriver'] = None) -> ModelDict:
         return Model.read_dict(self._key, db_driver)
 
     def __repr__(self):
@@ -94,8 +94,9 @@ class KeyList(Generic[_KT]):
         return ', '.join(self._keys)
 
     # TODO: Implement these for multiple gets/sets on driver
-    def load(self, db_driver: Optional['DbDriver'] = None) -> _KT:
+    def load(self, db_driver: Optional['DbDriver'] = None) -> List[_KT]:
         return [Model.load(k, db_driver) for k in self._keys]
+
     #
     # def delete(self):
     #     return [Model.delete_by_key(k) for k in self._keys]
@@ -104,7 +105,7 @@ class KeyList(Generic[_KT]):
     #     assert len(data) == len(self._keys)
     #     return [Model.save_by_key(k, d) for k, d in zip(self._keys, data)]
     #
-    def read(self, db_driver: Optional['DbDriver'] = None):
+    def read(self, db_driver: Optional['DbDriver'] = None) -> List[ModelDict]:
         return [Model.read_dict(k, db_driver) for k in self._keys]
 
     def __repr__(self):
