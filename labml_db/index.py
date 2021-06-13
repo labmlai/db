@@ -32,6 +32,8 @@ class Index(Generic[_KT]):
 
     @classmethod
     def mget(cls, index_key: List[str]) -> List[Optional[Key[_KT]]]:
+        if not index_key:
+            return []
         db_driver = Index.__db_drivers[cls.__name__]
         return [Index._to_key(k) for k in db_driver.mget(index_key)]
 
