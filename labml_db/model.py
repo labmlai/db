@@ -237,6 +237,8 @@ class Model(Generic[_KT]):
 
     @classmethod
     def mread_dict(cls, key: List[str], db_driver: Optional['DbDriver'] = None) -> List[ModelDict]:
+        if not key:
+            return []
         model_name = key[0].split(':')[0]
         if db_driver is None:
             db_driver = Model.__db_drivers[model_name]
