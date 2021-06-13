@@ -45,8 +45,6 @@ def _get_base_classes(class_: Type['Model']) -> List[Type['Model']]:
     return unique_classes
 
 
-
-
 class Key(Generic[_KT]):
     _key: str
 
@@ -73,6 +71,7 @@ class Key(Generic[_KT]):
     def __repr__(self):
         return f'Key({self._key})'
 
+
 class KeyList(Generic[_KT]):
     _keys: List[str]
 
@@ -94,17 +93,17 @@ class KeyList(Generic[_KT]):
     def __str__(self):
         return ', '.join(self._keys)
 
-    #TODO: Implement these for multiple gets/sets on driver
+    # TODO: Implement these for multiple gets/sets on driver
     def load(self, db_driver: Optional['DbDriver'] = None) -> _KT:
         return [Model.load(k, db_driver) for k in self._keys]
-
-    def delete(self):
-        return [Model.delete_by_key(k) for k in self._keys]
-
-    def save(self, data: List[ModelDict]):
-        assert len(data) == len(self._keys)
-        return [Model.save_by_key(k, d) for k, d in zip(self._keys, data)]
-
+    #
+    # def delete(self):
+    #     return [Model.delete_by_key(k) for k in self._keys]
+    #
+    # def save(self, data: List[ModelDict]):
+    #     assert len(data) == len(self._keys)
+    #     return [Model.save_by_key(k, d) for k, d in zip(self._keys, data)]
+    #
     def read(self, db_driver: Optional['DbDriver'] = None):
         return [Model.read_dict(k, db_driver) for k in self._keys]
 
@@ -236,6 +235,15 @@ class Model(Generic[_KT]):
         Model.__db_drivers = {d.model_name: d for d in db_drivers}
 
     @classmethod
+    def mread_dict(cls, key: List[str], db_driver: Optional['DbDriver'] = None) -> List[ModelDict]:
+        model_name = key[0].split(':')[0]
+        if db_driver is None:
+            db_driver = Model.__db_drivers[model_name]
+        data = db_driver.mload_dict(key)
+
+        return data
+
+    @classmethod
     def read_dict(cls, key: str, db_driver: Optional['DbDriver'] = None) -> ModelDict:
         model_name = key.split(':')[0]
         if db_driver is None:
@@ -244,12 +252,18 @@ class Model(Generic[_KT]):
 
         return data
 
+    @staticmethod
+    def _to_model(key: str, data: Optional[ModelDict]):
+        return Model.from_dict(key, data) if data is not None else None
+
     @classmethod
     def load(cls, key: str, db_driver: Optional['DbDriver'] = None) -> Optional[_KT]:
-        data = cls.read_dict(key, db_driver)
-        if data is None:
-            return None
-        return Model.from_dict(key, data)
+        return Model._to_model(key, cls.read_dict(key, db_driver))
+
+    @classmethod
+    def mload(cls, key: List[str], db_driver: Optional['DbDriver'] = None) -> List[Optional[_KT]]:
+        data = cls.mread_dict(key, db_driver)
+        return [Model._to_model(k, d) for k, d in zip(key, data)]
 
     @staticmethod
     def delete_by_key(key: str):

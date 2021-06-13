@@ -18,6 +18,10 @@ class RedisDbDriver(DbDriver):
     def _keys_list_key(self):
         return f'_keys:{self.model_name}'
 
+    def mload_dict(self, key: List[str]) -> List[Optional[ModelDict]]:
+        data = self._db.mget(key)
+        return [self._serializer.from_string(d) for d in data]
+
     def load_dict(self, key: str) -> Optional[ModelDict]:
         return self._serializer.from_string(self._db.get(key))
 

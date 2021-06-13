@@ -14,6 +14,9 @@ class DbDriver:
     def load_dict(self, key: str) -> Optional[ModelDict]:
         raise NotImplementedError
 
+    def mload_dict(self, key: List[str]) -> List[Optional[ModelDict]]:
+        raise NotImplementedError
+
     def delete(self, key: str):
         raise NotImplementedError
 

@@ -17,6 +17,9 @@ class FileDbDriver(DbDriver):
         if not db_path.exists():
             db_path.mkdir(parents=True)
 
+    def mload_dict(self, key: List[str]) -> List[Optional[ModelDict]]:
+        return [self.load_dict(k) for k in key]
+
     def load_dict(self, key: str) -> Optional[ModelDict]:
         path = self._db_path / f'{key}.{self._serializer.file_extension}'
         if not path.exists():
