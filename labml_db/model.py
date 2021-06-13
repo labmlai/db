@@ -95,7 +95,7 @@ class KeyList(Generic[_KT]):
 
     # TODO: Implement these for multiple gets/sets on driver
     def load(self, db_driver: Optional['DbDriver'] = None) -> List[_KT]:
-        return [Model.load(k, db_driver) for k in self._keys]
+        return Model.mload(self._keys, db_driver)
 
     #
     # def delete(self):
