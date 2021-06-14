@@ -56,6 +56,12 @@ class Key(Generic[_KT]):
     def __str__(self):
         return self._key
 
+    def __hash__(self):
+        return hash(self._key)
+
+    def __eq__(self, other: 'Key'):
+        return str(self) == str(other)
+
     def load(self, db_driver: Optional['DbDriver'] = None) -> _KT:
         return Model.load(self._key, db_driver)
 
