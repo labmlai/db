@@ -1,7 +1,7 @@
-.. image:: https://badge.fury.io/py/labml_db.svg
-    :target: https://badge.fury.io/py/labml_db
-.. image:: https://pepy.tech/badge/labml_db
-    :target: https://pepy.tech/project/labml_db
+.. image:: https://badge.fury.io/py/labml-db.svg
+    :target: https://badge.fury.io/py/labml-db
+.. image:: https://pepy.tech/badge/labml-db
+    :target: https://pepy.tech/project/labml-db
 
 LabML DB
 ========
