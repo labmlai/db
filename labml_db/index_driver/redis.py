@@ -1,12 +1,10 @@
-from pathlib import Path
-from typing import Dict, Type, Optional, TYPE_CHECKING
+from typing import Dict, Type, Optional, TYPE_CHECKING, List
 
 from . import IndexDbDriver
 
 if TYPE_CHECKING:
     import redis
     from .. import Index
-    from .. import Serializer
 
 
 class RedisIndexDbDriver(IndexDbDriver):
@@ -25,6 +23,10 @@ class RedisIndexDbDriver(IndexDbDriver):
 
     def get(self, index_key: str) -> str:
         return self._db.hget(self._index_key, index_key)
+
+    def mget(self, index_key: List[str]) -> List[str]:
+        return self._db.hmget(self._index_key, index_key)
+
 
     def set(self, index_key: str, model_key: str):
         self._db.hset(self._index_key, index_key, model_key)

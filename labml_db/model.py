@@ -1,12 +1,12 @@
 import copy
 import warnings
+from typing import Generic, Union
 from typing import TypeVar, List, Dict, Type, Set, Optional, _GenericAlias, TYPE_CHECKING
 
 from .types import Primitive, ModelDict
 
 if TYPE_CHECKING:
     from .driver import DbDriver
-    from .serializer import Serializer
 
 _KT = TypeVar('_KT')
 
@@ -45,9 +45,6 @@ def _get_base_classes(class_: Type['Model']) -> List[Type['Model']]:
     return unique_classes
 
 
-from typing import Generic
-
-
 class Key(Generic[_KT]):
     _key: str
 
@@ -59,8 +56,14 @@ class Key(Generic[_KT]):
     def __str__(self):
         return self._key
 
-    def load(self) -> _KT:
-        return Model.load(self._key)
+    def __hash__(self):
+        return hash(self._key)
+
+    def __eq__(self, other: 'Key'):
+        return str(self) == str(other)
+
+    def load(self, db_driver: Optional['DbDriver'] = None) -> _KT:
+        return Model.load(self._key, db_driver)
 
     def delete(self):
         return Model.delete_by_key(self._key)
@@ -68,14 +71,52 @@ class Key(Generic[_KT]):
     def save(self, data: ModelDict):
         return Model.save_by_key(self._key, data)
 
-    def read(self):
-        return Model.read_dict(self._key)
-
-    def read_from_serializer(self, serializer: 'Serializer'):
-        return Model.read_dict_from_serializer(self._key, serializer)
+    def read(self, db_driver: Optional['DbDriver'] = None) -> ModelDict:
+        return Model.read_dict(self._key, db_driver)
 
     def __repr__(self):
         return f'Key({self._key})'
+
+
+class KeyList(Generic[_KT]):
+    _keys: List[str]
+
+    def __init__(self, key_list: Optional[List[Union[str, Key[_KT]]]] = None):
+        if key_list is None:
+            key_list = []
+        self._keys = []
+        for k in key_list:
+            self.append(k)
+
+    def append(self, key: Union[str, Key[_KT]]):
+        if type(key) == bytes:
+            self._keys.append(key.decode('utf-8'))
+        elif type(key) == str:
+            self._keys.append(key)
+        else:
+            self._keys.append(str(key))
+
+    def __str__(self):
+        return ', '.join(self._keys)
+
+    # TODO: Implement these for multiple gets/sets on driver
+    def load(self, db_driver: Optional['DbDriver'] = None) -> List[_KT]:
+        return Model.mload(self._keys, db_driver)
+
+    #
+    # def delete(self):
+    #     return [Model.delete_by_key(k) for k in self._keys]
+    #
+    # def save(self, data: List[ModelDict]):
+    #     assert len(data) == len(self._keys)
+    #     return [Model.save_by_key(k, d) for k, d in zip(self._keys, data)]
+    #
+    def read(self, db_driver: Optional['DbDriver'] = None) -> List[ModelDict]:
+        return [Model.read_dict(k, db_driver) for k in self._keys]
+
+    def __repr__(self):
+        s = ', '.join(self._keys)
+        return f'KeyList({s})'
 
 
 class ModelSpec:
@@ -201,27 +242,37 @@ class Model(Generic[_KT]):
         Model.__db_drivers = {d.model_name: d for d in db_drivers}
 
     @classmethod
-    def read_dict(cls, key: str) -> ModelDict:
+    def mread_dict(cls, key: List[str], db_driver: Optional['DbDriver'] = None) -> List[ModelDict]:
+        if not key:
+            return []
+        model_name = key[0].split(':')[0]
+        if db_driver is None:
+            db_driver = Model.__db_drivers[model_name]
+        data = db_driver.mload_dict(key)
+
+        return data
+
+    @classmethod
+    def read_dict(cls, key: str, db_driver: Optional['DbDriver'] = None) -> ModelDict:
         model_name = key.split(':')[0]
-        db_driver = Model.__db_drivers[model_name]
+        if db_driver is None:
+            db_driver = Model.__db_drivers[model_name]
         data = db_driver.load_dict(key)
 
         return data
 
-    @classmethod
-    def read_dict_from_serializer(cls, key, serializer: 'Serializer'):
-        model_name = key.split(':')[0]
-        db_driver = Model.__db_drivers[model_name]
-        data = db_driver.load_dict_from_serializer(key, serializer)
-
-        return data
+    @staticmethod
+    def _to_model(key: str, data: Optional[ModelDict]):
+        return Model.from_dict(key, data) if data is not None else None
 
     @classmethod
-    def load(cls, key: str) -> Optional[_KT]:
-        data = cls.read_dict(key)
-        if data is None:
-            return None
-        return Model.from_dict(key, data)
+    def load(cls, key: str, db_driver: Optional['DbDriver'] = None) -> Optional[_KT]:
+        return Model._to_model(key, cls.read_dict(key, db_driver))
+
+    @classmethod
+    def mload(cls, key: List[str], db_driver: Optional['DbDriver'] = None) -> List[Optional[_KT]]:
+        data = cls.mread_dict(key, db_driver)
+        return [Model._to_model(k, d) for k, d in zip(key, data)]
 
     @staticmethod
     def delete_by_key(key: str):
