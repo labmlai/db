@@ -1,35 +1,11 @@
-from typing import List, Optional
-
 import redis
 
-from labml_db import Model, Key, Index
+from labml_db import Model, Index
 from labml_db.driver.redis import RedisDbDriver
 from labml_db.index_driver.redis import RedisIndexDbDriver
 from labml_db.serializer.pickle import PickleSerializer
 from labml_db.serializer.yaml import YamlSerializer
-
-
-class Project(Model['Project']):
-    name: str
-    experiments: int
-
-    @classmethod
-    def defaults(cls):
-        return dict(name='', experiments=0)
-
-
-class User(Model['User']):
-    name: str
-    projects: List[Key[Project]]
-    occupation: Optional[str]
-
-    @classmethod
-    def defaults(cls):
-        return dict(projects=[])
-
-
-class UsernameIndex(Index['User']):
-    pass
+from test.simple import User, Project, UsernameIndex
 
 
 def test_setup():
