@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Optional
 
 from ..types import ModelDict
 
@@ -10,5 +10,5 @@ class Serializer:
     def to_string(self, data: ModelDict) -> Union[str, bytes]:
         raise NotImplementedError
 
-    def from_string(self, data: Union[str, bytes]) -> ModelDict:
+    def from_string(self, data: Union[str, bytes, None]) -> Optional[ModelDict]:
         raise NotImplementedError

@@ -1,3 +1,4 @@
+from typing import Optional
 
 from . import Serializer
 from .utils import encode_keys, decode_keys
@@ -11,6 +12,8 @@ class YamlSerializer(Serializer):
         import yaml
         return yaml.dump(encode_keys(data), default_flow_style=False)
 
-    def from_string(self, data: str) -> ModelDict:
+    def from_string(self, data: Optional[str]) -> Optional[ModelDict]:
+        if data is None:
+            return None
         import yaml
         return decode_keys(yaml.load(data, Loader=yaml.FullLoader))
