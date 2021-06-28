@@ -34,6 +34,10 @@ class FileDbDriver(DbDriver):
                 fcntl.lockf(f, fcntl.LOCK_SH)
                 return self._serializer.from_string(f.read())
 
+    def msave_dict(self, key: List[str], data: List[ModelDict]):
+        for k, d in zip(key, data):
+            self.save_dict(k, d)
+
     def save_dict(self, key: str, data: ModelDict):
         path = self._db_path / f'{key}.{self._serializer.file_extension}'
         if self._serializer.is_bytes:

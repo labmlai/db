@@ -23,5 +23,8 @@ class DbDriver:
     def save_dict(self, key: str, data: ModelDict):
         raise NotImplementedError
 
+    def msave_dict(self, key: List[str], data: List[ModelDict]):
+        raise NotImplementedError
+
     def get_all(self) -> List[str]:
         raise NotImplementedError

@@ -303,6 +303,13 @@ class Model(Generic[_KT]):
         db_driver = Model.__db_drivers[self.__class__.__name__]
         db_driver.save_dict(self._key, self.to_dict())
 
+    @classmethod
+    def msave(cls, models: List[_KT]):
+        db_driver = Model.__db_drivers[cls.__name__]
+        keys = [m._key for m in models]
+        dicts = [m.to_dict() for m in models]
+        db_driver.msave_dict(keys, dicts)
+
     def delete(self):
         db_driver = Model.__db_drivers[self.__class__.__name__]
         db_driver.delete(self._key)
