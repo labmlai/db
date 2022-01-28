@@ -27,6 +27,8 @@ class RedisIndexDbDriver(IndexDbDriver):
     def mget(self, index_key: List[str]) -> List[str]:
         return self._db.hmget(self._index_key, index_key)
 
-
     def set(self, index_key: str, model_key: str):
         self._db.hset(self._index_key, index_key, model_key)
+
+    def get_all(self):
+        return self._db.hgetall(self._index_key)

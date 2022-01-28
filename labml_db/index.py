@@ -41,3 +41,9 @@ class Index(Generic[_KT]):
     def set(cls, index_key: str, model_key: Key[_KT]):
         db_driver = Index.__db_drivers[cls.__name__]
         db_driver.set(index_key, str(model_key))
+
+    @classmethod
+    def get_all(cls):
+        db_driver = Index.__db_drivers[cls.__name__]
+        keys = db_driver.get_all()
+        return keys

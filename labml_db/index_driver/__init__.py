@@ -19,3 +19,6 @@ class IndexDbDriver:
 
     def set(self, index_key: str, model_key: str):
         raise NotImplementedError
+
+    def get_all(self) -> List[str]:
+        raise NotImplementedError
