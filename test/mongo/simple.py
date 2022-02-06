@@ -1,7 +1,8 @@
 from pymongo import MongoClient
 
-from labml_db import Model
+from labml_db import Model, Index
 from labml_db.driver.mongo import MongoDbDriver
+from labml_db.index_driver.mongo import MongoIndexDbDriver
 from test.simple import User, Project, UsernameIndex
 
 
@@ -11,9 +12,9 @@ def test_setup():
         MongoDbDriver(User, db),
         MongoDbDriver(Project, db)
     ])
-    # Index.set_db_drivers([
-    #     RedisIndexDbDriver(UsernameIndex, db)
-    # ])
+    Index.set_db_drivers([
+        MongoIndexDbDriver(UsernameIndex, db)
+    ])
 
 
 def test():
@@ -53,4 +54,4 @@ if __name__ == '__main__':
     test_setup()
     test()
     test_load()
-    # test_index()
+    test_index()

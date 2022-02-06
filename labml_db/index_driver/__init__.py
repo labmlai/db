@@ -1,4 +1,4 @@
-from typing import Type, TYPE_CHECKING, List
+from typing import Type, TYPE_CHECKING, List, Optional
 
 if TYPE_CHECKING:
     from . import Index
@@ -11,10 +11,10 @@ class IndexDbDriver:
     def delete(self, index_key: str):
         raise NotImplementedError
 
-    def get(self, index_key: str) -> str:
+    def get(self, index_key: str) -> Optional[str]:
         raise NotImplementedError
 
-    def mget(self, index_key: List[str]) -> List[str]:
+    def mget(self, index_key: List[str]) -> List[Optional[str]]:
         raise NotImplementedError
 
     def set(self, index_key: str, model_key: str):

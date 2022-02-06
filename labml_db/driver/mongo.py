@@ -39,7 +39,13 @@ class MongoDbDriver(DbDriver):
     def mload_dict(self, key: List[str]) -> List[Optional[ModelDict]]:
         obj_keys = [self._to_obj_id(k) for k in key]
         cursor = self._collection.find({'_id': {'$in': obj_keys}})
-        return [self._load_data(d) for d in cursor]
+        res = [None for _ in key]
+        idx = {k: i for i, k in enumerate(obj_keys)}
+        for d in cursor:
+            i = idx[d['_id']]
+            res[i] = self._load_data(d)
+
+        return res
 
     def load_dict(self, key: str) -> Optional[ModelDict]:
         d = self._collection.find_one({'_id': self._to_obj_id(key)})
