@@ -5,15 +5,15 @@ with open("readme.rst", "r") as f:
 
 setuptools.setup(
     name='labml_db',
-    version='0.0.14',
+    version='0.0.15',
     author="Varuna Jayasiri, Nipun Wijerathne",
     author_email="vpjayasiri@gmail.com, hnipun@gmail.com",
-    description="Minimalistic ORM for JSON/YAML/Pickle file based DB",
+    description="Minimalistic ORM for JSON/YAML/Pickle file based/redis/mongo DB",
     long_description=long_description,
     long_description_content_type="text/x-rst",
-    url="https://github.com/lab-ml/db",
+    url="https://github.com/labmlai/db",
     project_urls={
-        'Documentation': 'https://lab-ml.com/'
+        'Documentation': 'https://labml.ai'
     },
     packages=setuptools.find_packages(exclude=('test',
                                                'test.*')),

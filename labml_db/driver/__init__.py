@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 
 class DbDriver:
-    def __init__(self, serializer: 'Serializer', model_cls: Type['Model']):
+    def __init__(self, serializer: Optional['Serializer'], model_cls: Type['Model']):
         self.model_name = model_cls.__name__
         self._serializer = serializer
 
