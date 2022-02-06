@@ -12,3 +12,4 @@ labml
 labml_helpers
 data
 logs
+*.rdb
