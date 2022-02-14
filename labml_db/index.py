@@ -7,11 +7,12 @@ _KT = TypeVar('_KT')
 
 
 class Index(Generic[_KT]):
-    __db_drivers: Dict[str, IndexDbDriver]
+    __db_drivers: Dict[str, IndexDbDriver] = {}
 
     @staticmethod
     def set_db_drivers(db_drivers: List[IndexDbDriver]):
-        Index.__db_drivers = {d.index_name: d for d in db_drivers}
+        for d in db_drivers:
+            Index.__db_drivers[d.index_name] = d
 
     @classmethod
     def delete(cls, index_key: str):

@@ -168,7 +168,7 @@ class ModelSpec:
 
 class Model(Generic[_KT]):
     __models: Dict[str, ModelSpec] = {}
-    __db_drivers: Dict[str, 'DbDriver']
+    __db_drivers: Dict[str, 'DbDriver'] = {}
     _defaults = Dict[str, Primitive]
     _values = Dict[str, Primitive]
 
@@ -239,7 +239,8 @@ class Model(Generic[_KT]):
 
     @staticmethod
     def set_db_drivers(db_drivers: List['DbDriver']):
-        Model.__db_drivers = {d.model_name: d for d in db_drivers}
+        for d in db_drivers:
+            Model.__db_drivers[d.model_name] = d
 
     @classmethod
     def mread_dict(cls, key: List[str], db_driver: Optional['DbDriver'] = None) -> List[ModelDict]:
