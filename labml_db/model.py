@@ -1,6 +1,6 @@
 import copy
 import warnings
-from typing import Generic, Union
+from typing import Generic, Union, Any
 from typing import TypeVar, List, Dict, Type, Set, Optional, _GenericAlias, TYPE_CHECKING
 
 from .types import Primitive, ModelDict
@@ -216,6 +216,9 @@ class Model(Generic[_KT]):
         self._values[key] = value
 
     def update(self, data: ModelDict):
+        """
+        Not used
+        """
         for k, v in data.items():
             setattr(self, k, v)
 
@@ -231,6 +234,9 @@ class Model(Generic[_KT]):
 
     @classmethod
     def defaults(cls):
+        """
+        This should be overridden
+        """
         return {}
 
     @property
@@ -286,17 +292,33 @@ class Model(Generic[_KT]):
         db_driver = Model.__db_drivers[model_name]
         db_driver.save_dict(key, data)
 
+    def to_dict_transform(self, data: Dict[str, Any]) -> ModelDict:
+        """
+        This should be overridden if necessary and transform values to primitive types
+        """
+        return data
+
+    @classmethod
+    def from_dict_transform(cls, data: ModelDict) -> Dict[str, Any]:
+        """
+        This should be overridden if necessary and transform values to primitive types
+        """
+        return data
+
     def to_dict(self) -> ModelDict:
         values = {}
         for k, v in self._values.items():
             if k not in self._defaults or self._defaults[k] != v:
                 values[k] = v
+        values = self.to_dict_transform(values)
         return values
 
     @classmethod
     def from_dict(cls, key: str, data: ModelDict) -> _KT:
         model_name = key.split(':')[0]
-        model = Model.__models[model_name].model_cls(key, **data)
+        model_cls = Model.__models[model_name].model_cls
+        data = model_cls.from_dict_transform(data)
+        model = model_cls(key, **data)
         return model
 
     def save(self):
