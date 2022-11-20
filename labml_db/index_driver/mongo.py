@@ -39,3 +39,7 @@ class MongoIndexDbDriver(IndexDbDriver):
     def get_all(self):
         cur = self._index.find()
         return [d['value'] for d in cur]
+
+    def get_all_key_values(self) -> Dict[str, str]:
+        cur = self._index.find()
+        return {d['_id']: d['value'] for d in cur}

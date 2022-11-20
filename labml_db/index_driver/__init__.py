@@ -1,4 +1,4 @@
-from typing import Type, TYPE_CHECKING, List, Optional
+from typing import Type, TYPE_CHECKING, List, Optional, Dict
 
 if TYPE_CHECKING:
     from . import Index
@@ -21,4 +21,7 @@ class IndexDbDriver:
         raise NotImplementedError
 
     def get_all(self) -> List[str]:
+        raise NotImplementedError
+
+    def get_all_key_values(self) -> Dict[str, str]:
         raise NotImplementedError

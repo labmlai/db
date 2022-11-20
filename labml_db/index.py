@@ -47,3 +47,9 @@ class Index(Generic[_KT]):
         db_driver = Index.__db_drivers[cls.__name__]
         keys = db_driver.get_all()
         return keys
+
+    @classmethod
+    def get_all_key_values(cls) -> Dict[str, Key[_KT]]:
+        db_driver = Index.__db_drivers[cls.__name__]
+        res = db_driver.get_all_key_values()
+        return {k: Index._to_key(v) for k, v in res.items()}
