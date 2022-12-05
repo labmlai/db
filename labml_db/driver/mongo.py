@@ -1,12 +1,12 @@
-from typing import List, Type, TYPE_CHECKING, Optional, Dict
+from typing import List, Type, TYPE_CHECKING, Optional, Dict, Tuple
+
+import pymongo
 
 from labml_db.serializer.utils import encode_keys, decode_keys
-
 from . import DbDriver
-from ..types import ModelDict
+from ..types import ModelDict, QueryDict, SortDict
 
 if TYPE_CHECKING:
-    import pymongo
     from ..model import Model
 
 
@@ -70,3 +70,15 @@ class MongoDbDriver(DbDriver):
         cur = self._collection.find(projection=['_id'])
         keys = [self._to_key(d['_id']) for d in cur]
         return keys
+
+    def get_by_dict(self, query: Optional[QueryDict], sort: Optional[SortDict]) -> List[Tuple[str, ModelDict]]:
+        query = {k: v for k, v in query.items()} if query else dict()
+        cursor = self._collection.find(query)
+        if sort is not None and len(sort) > 0:
+            sort_query = [(k, pymongo.ASCENDING if v else pymongo.DESCENDING) for k, v in sort.items()]
+            cursor.sort(sort_query)
+        res = []
+        for d in cursor:
+            res.append((d['_id'], self._load_data(d)))
+
+        return res

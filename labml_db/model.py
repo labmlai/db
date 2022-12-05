@@ -3,7 +3,7 @@ import warnings
 from typing import Generic, Union, Any
 from typing import TypeVar, List, Dict, Type, Set, Optional, _GenericAlias, TYPE_CHECKING
 
-from .types import Primitive, ModelDict
+from .types import Primitive, ModelDict, QueryDict, SortDict
 
 if TYPE_CHECKING:
     from .driver import DbDriver
@@ -340,3 +340,9 @@ class Model(Generic[_KT]):
         kv = [f'{k}={repr(v)}' for k, v in self._values.items()]
         kv = ', '.join(kv)
         return f'{self.__class__.__name__}({kv})'
+
+    @classmethod
+    def get_by(cls, query: Optional[QueryDict] = None, sort: Optional[SortDict] = None):
+        db_driver = Model.__db_drivers[cls.__name__]
+        data = db_driver.get_by_dict(query=query, sort=sort)
+        return [Model._to_model(k, d) for k, d in data]

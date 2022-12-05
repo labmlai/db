@@ -1,6 +1,6 @@
 from typing import List, Type, TYPE_CHECKING, Optional
 
-from ..types import ModelDict
+from ..types import ModelDict, QueryDict, SortDict
 
 if TYPE_CHECKING:
     from .. import Serializer, Model
@@ -27,4 +27,7 @@ class DbDriver:
         raise NotImplementedError
 
     def get_all(self) -> List[str]:
+        raise NotImplementedError
+
+    def get_by_dict(self, query: Optional[QueryDict], sort: Optional[SortDict]) -> List[Optional[ModelDict]]:
         raise NotImplementedError
