@@ -359,4 +359,4 @@ class Model(Generic[_KT]):
         db_driver = Model.__db_drivers[cls.__name__]
         data, total_count = db_driver.search(text_query=text_query, filters=filters, sort=sort, randomize=randomize,
                                              limit=limit, sort_by_text_score=sort_by_text_score)
-        return [Model._to_model(k, d) for k, d in data]
+        return [Model._to_model(k, d) for k, d in data], total_count
