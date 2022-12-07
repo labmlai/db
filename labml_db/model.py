@@ -347,7 +347,7 @@ class Model(Generic[_KT]):
                sort_by_text_score: bool = False) -> Tuple[List[_KT], int]:
         if sort is not None and len(sort) > 0 and randomize:
             raise ValueError('Cannot have both randomize and sort criteria')
-        if limit is None or limit <= 0:
+        if limit is not None and limit <= 0:
             raise ValueError('Limit should be higher than 0')
         if randomize and not limit:
             raise ValueError('A limit should be provided when results are randomized')

@@ -77,7 +77,14 @@ class MongoDbDriver(DbDriver):
         List[Tuple[str, ModelDict]], int]:
         pipeline = []
 
-        match = {k: v for k, v in filters.items()} if filters else dict()
+        match = dict()
+        if filters:
+            for property_name, item in filters.items():
+                value, equal = item
+                if equal:
+                    match[property_name] = value
+                else:
+                    match[property_name] = {'$ne': value}
         if text_query:
             match['$text'] = {'$search': text_query}
         if len(match) > 0:
