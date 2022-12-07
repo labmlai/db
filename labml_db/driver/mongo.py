@@ -1,4 +1,5 @@
-from typing import List, Type, TYPE_CHECKING, Optional, Dict, Tuple
+from collections import OrderedDict
+from typing import List, Type, TYPE_CHECKING, Optional, Dict, Tuple, OrderedDict
 
 import pymongo
 
@@ -71,14 +72,45 @@ class MongoDbDriver(DbDriver):
         keys = [self._to_key(d['_id']) for d in cur]
         return keys
 
-    def get_by_dict(self, query: Optional[QueryDict], sort: Optional[SortDict]) -> List[Tuple[str, ModelDict]]:
-        query = {k: v for k, v in query.items()} if query else dict()
-        cursor = self._collection.find(query)
-        if sort is not None and len(sort) > 0:
-            sort_query = [(k, pymongo.ASCENDING if v else pymongo.DESCENDING) for k, v in sort.items()]
-            cursor.sort(sort_query)
-        res = []
-        for d in cursor:
-            res.append((d['_id'], self._load_data(d)))
+    def search(self, text_query: Optional[str], filters: Optional[QueryDict], sort: Optional[SortDict],
+               randomize: bool = False, limit: Optional[int] = None, sort_by_text_score: bool = False) -> Tuple[
+        List[Tuple[str, ModelDict]], int]:
+        pipeline = []
 
-        return res
+        match = {k: v for k, v in filters.items()} if filters else dict()
+        if text_query:
+            match['$text'] = {'$search': text_query}
+        if len(match) > 0:
+            pipeline.append({'$match': match})
+
+        if randomize:
+            pipeline.append({'$facet': {'data': [{'$sample': {'size': limit}}], 'count': [{'$count': 'count'}]}})
+        else:
+            sort_query = OrderedDict()
+            if sort_by_text_score:
+                sort_query['score'] = {'$meta': 'textScore'}
+            if sort is not None and len(sort) > 0:
+                for k, v in sort:
+                    sort_query[k] = pymongo.ASCENDING if v else pymongo.DESCENDING
+
+            pipeline.append({'$sort': sort_query})
+
+            if limit:
+                pipeline.append({'$facet': {'data': [{'$limit': limit}], 'count': [{'$count': 'count'}]}})
+
+        cursor = self._collection.aggregate(pipeline)
+        res = []
+        count = 0
+        if limit:
+            for item in cursor:
+                for c in item['count']:
+                    count += c['count']
+                for d in item['data']:
+                    res.append((d['_id'], self._load_data(d)))
+        else:
+            for d in cursor:
+                res.append((d['_id'], self._load_data(d)))
+
+            count = len(res)
+
+        return res, count

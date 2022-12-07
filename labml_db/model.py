@@ -1,6 +1,6 @@
 import copy
 import warnings
-from typing import Generic, Union, Any
+from typing import Generic, Union, Any, Tuple
 from typing import TypeVar, List, Dict, Type, Set, Optional, _GenericAlias, TYPE_CHECKING
 
 from .types import Primitive, ModelDict, QueryDict, SortDict
@@ -308,8 +308,8 @@ class Model(Generic[_KT]):
     def to_dict(self) -> ModelDict:
         values = {}
         for k, v in self._values.items():
-            if k not in self._defaults or self._defaults[k] != v:
-                values[k] = v
+            # TODO: exclude defaults from the saved data based on a flag
+            values[k] = v
         values = self.to_dict_transform(values)
         return values
 
@@ -342,7 +342,21 @@ class Model(Generic[_KT]):
         return f'{self.__class__.__name__}({kv})'
 
     @classmethod
-    def get_by(cls, query: Optional[QueryDict] = None, sort: Optional[SortDict] = None):
+    def search(cls, text_query: Optional[str] = None, filters: Optional[QueryDict] = None,
+               sort: Optional[SortDict] = None, randomize: bool = False, limit: Optional[int] = None,
+               sort_by_text_score: bool = False) -> Tuple[List[_KT], int]:
+        if sort is not None and len(sort) > 0 and randomize:
+            raise ValueError('Cannot have both randomize and sort criteria')
+        if limit is None or limit <= 0:
+            raise ValueError('Limit should be higher than 0')
+        if randomize and not limit:
+            raise ValueError('A limit should be provided when results are randomized')
+        if sort_by_text_score and not text_query:
+            raise ValueError("Cannot search by text score when there's no text query")
+        if randomize and sort_by_text_score:
+            raise ValueError('Cannot have both randomize and sort by text score')
+
         db_driver = Model.__db_drivers[cls.__name__]
-        data = db_driver.get_by_dict(query=query, sort=sort)
+        data, total_count = db_driver.search(text_query=text_query, filters=filters, sort=sort, randomize=randomize,
+                                             limit=limit, sort_by_text_score=sort_by_text_score)
         return [Model._to_model(k, d) for k, d in data]
