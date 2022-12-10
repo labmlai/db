@@ -99,8 +99,9 @@ class MongoDbDriver(DbDriver):
             if sort is not None and len(sort) > 0:
                 for k, v in sort:
                     sort_query[k] = pymongo.ASCENDING if v else pymongo.DESCENDING
-
-            pipeline.append({'$sort': sort_query})
+            
+            if len(sort_query) > 0:
+                pipeline.append({'$sort': sort_query})
 
             if limit:
                 pipeline.append({'$facet': {'data': [{'$limit': limit}], 'count': [{'$count': 'count'}]}})
