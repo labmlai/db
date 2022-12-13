@@ -192,7 +192,7 @@ class Model(Generic[_KT]):
         for k, v in kwargs.items():
             setattr(self, k, v)
 
-        for k, v in self._defaults:
+        for k, v in self._defaults.items():
             if k not in kwargs:
                 setattr(self, k, v)
 
