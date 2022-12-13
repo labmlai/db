@@ -192,6 +192,10 @@ class Model(Generic[_KT]):
         for k, v in kwargs.items():
             setattr(self, k, v)
 
+        for k, v in self._defaults:
+            if k not in kwargs:
+                setattr(self, k, v)
+
     def __init_subclass__(cls, **kwargs):
         if cls.__name__ in Model.__models:
             warnings.warn(f"{cls.__name__} already used")
