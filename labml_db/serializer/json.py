@@ -10,6 +10,7 @@ class JsonSerializer(Serializer):
     file_extension = 'json'
 
     def to_string(self, data: ModelDict) -> str:
+        assert data
         return json.dumps(encode_keys(data))
 
     def from_string(self, data: Optional[str]) -> Optional[ModelDict]:

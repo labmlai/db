@@ -10,6 +10,7 @@ class YamlSerializer(Serializer):
 
     def to_string(self, data: ModelDict) -> str:
         import yaml
+        assert data
         return yaml.dump(encode_keys(data), default_flow_style=False)
 
     def from_string(self, data: Optional[str]) -> Optional[ModelDict]:
