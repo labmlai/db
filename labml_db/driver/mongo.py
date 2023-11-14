@@ -3,7 +3,7 @@ from typing import List, Type, TYPE_CHECKING, Optional, Dict, Tuple, OrderedDict
 
 import pymongo
 
-from labml_db.serializer.utils import encode_keys, decode_keys
+from ..serializer.utils import encode_keys, decode_keys
 from . import DbDriver
 from ..types import ModelDict, QueryDict, SortDict
 
