@@ -1,6 +1,6 @@
-from typing import List, Type, TYPE_CHECKING, Optional
+from typing import List, Type, TYPE_CHECKING, Optional, Tuple
 
-from ..types import ModelDict
+from ..types import ModelDict, QueryDict, SortDict
 
 if TYPE_CHECKING:
     from .. import Serializer, Model
@@ -27,4 +27,9 @@ class DbDriver:
         raise NotImplementedError
 
     def get_all(self) -> List[str]:
+        raise NotImplementedError
+
+    def search(self, text_query: Optional[str], filters: Optional[QueryDict], sort: Optional[SortDict],
+               randomize: bool = False, limit: Optional[int] = None, sort_by_text_score: bool = False) -> Tuple[
+        List[Tuple[str, ModelDict]], int]:
         raise NotImplementedError
