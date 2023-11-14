@@ -1,7 +1,7 @@
 from typing import Dict
 
-from labml_db import Key
-from labml_db.types import Primitive
+from .. import Key
+from ..types import Primitive
 
 
 def encode_key(key: Key) -> Dict[str, str]:
